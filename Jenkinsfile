@@ -45,7 +45,8 @@ pipeline {
             steps {
 
                 bat """
-                kubectl set image deployment/flask-app-deployment flask-container=%DOCKER_IMAGE%:%DOCKER_TAG%
+                set KUBECONFIG=C:\Users\Dhruv\.kube\config
+		kubectl set image deployment/flask-app-deployment flask-container=%DOCKER_IMAGE%:%DOCKER_TAG%
                 """
 
             }
