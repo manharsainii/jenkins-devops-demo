@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = "manhartrainings/jenkins-docker-demo"
-        DOCKER_TAG = "latest"
+        DOCKER_TAG = "${BUILD_NUMBER}"
     }
 
     stages {
@@ -21,8 +21,9 @@ pipeline {
             }
         }
 
-        stage('Login to Docker Hub') {
+        stage('Docker Login') {
             steps {
+
                 withCredentials([usernamePassword(
                     credentialsId: 'dockerhub-creds',
                     usernameVariable: 'DOCKER_USER',
@@ -37,6 +38,16 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 bat 'docker push %DOCKER_IMAGE%:%DOCKER_TAG%'
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+
+                bat """
+                kubectl set image deployment/flask-app-deployment flask-container=%DOCKER_IMAGE%:%DOCKER_TAG%
+                """
+
             }
         }
     }
