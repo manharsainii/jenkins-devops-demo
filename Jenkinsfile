@@ -1,29 +1,42 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKER_IMAGE = "manhartrainings/jenkins-docker-demo"
+        DOCKER_TAG = "latest"
+    }
+
     stages {
 
-        stage('Clone') {
+        stage('Clone Repository') {
             steps {
-                echo 'Cloning Repository'
+                git branch: 'main',
+                url: 'https://github.com/manharsainii/jenkins-devops-demo.git'
             }
         }
 
-        stage('Build') {
+        stage('Build Docker Image') {
             steps {
-                echo 'Building Application'
+                bat 'docker build -t %DOCKER_IMAGE%:%DOCKER_TAG% .'
             }
         }
 
-        stage('Test') {
+        stage('Login to Docker Hub') {
             steps {
-                echo 'Testing Application'
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-creds',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+
+                    bat 'docker login -u %DOCKER_USER% -p %DOCKER_PASS%'
+                }
             }
         }
 
-        stage('Deploy') {
+        stage('Push Docker Image') {
             steps {
-                echo 'Deploy Stage'
+                bat 'docker push %DOCKER_IMAGE%:%DOCKER_TAG%'
             }
         }
     }
